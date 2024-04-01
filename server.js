@@ -6,12 +6,12 @@ const url = require("url");
 const cors = require('cors');
 const app = express();
 const port = 3000;
-
+//hi
 const connection = mysql.createConnection({
     host: "localhost",
     user: "root",
     password: "",
-  database: "moodboosterapi",
+    database: "moodboosterapi",
     port: 4100
     
 });
