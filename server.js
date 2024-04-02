@@ -1,231 +1,151 @@
 const express = require('express');
-const http = require("http");
-const mysql = require('mysql2');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const url = require("url");
 const cors = require('cors');
+require('dotenv').config();
+
 const app = express();
 const port = 3000;
-//hi
-const connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "moodboosterapi",
-    port: 4100
-    
+
+// Connect to MongoDB using the provided connection string
+mongoose.connect(process.env.MONGODB_CONNECTIONSTRING, {
+    dbName: process.env.MONGODB_DBNAME
+  
 });
 
-app.use(cors()); 
-
-connection.connect((err) => {
-    if (err) {
-        console.log("Connection error message: " + err.message);
-        return;
-    }
-
-    // Create tables after successful connection
-    createTables();
+// Define MongoDB schemas and models using Mongoose
+const rolesSchema = new mongoose.Schema({
+  title: String,
+  role_id: Number
 });
 
-function createTables() {
-    // SQL queries to create tables
-    const createRolesTableQuery = `
-        CREATE TABLE IF NOT EXISTS roles (
-            id INT PRIMARY KEY,
-            title VARCHAR(255),
-            description TEXT
-        )
-    `;
-    const createUsersTableQuery = `
-        CREATE TABLE IF NOT EXISTS users (
-            username VARCHAR(255) PRIMARY KEY,
-            password VARCHAR(255),
-            role_id INT,
-            FOREIGN KEY (role_id) REFERENCES roles(id)
-        )
-    `;
-    const createApiCallsTableQuery = `
-        CREATE TABLE IF NOT EXISTS api_calls (
-            user_name VARCHAR(255),
-            call_count INT,
-            FOREIGN KEY (user_name) REFERENCES users(username)
-        )
-    `;
+const usersSchema = new mongoose.Schema({
+  username: { type: String, unique: true },
+  email: { type: String, unique: true },
+  password: String,
+  role_id: Number
+});
 
-    // Execute the SQL queries to create tables
-    connection.query(createRolesTableQuery, (err, result) => {
-        if (err) {
-            console.log("Error creating roles table: " + err.message);
-        } else {
-            console.log("Roles table created successfully");
-        }
-    });
+const apiCallsSchema = new mongoose.Schema({
+  user_name: String,
+  call_count: Number
+});
 
-    connection.query(createUsersTableQuery, (err, result) => {
-        if (err) {
-            console.log("Error creating users table: " + err.message);
-        } else {
-            console.log("Users table created successfully");
-        }
-    });
+const Role = mongoose.model('Role', rolesSchema);
+const User = mongoose.model('User', usersSchema);
+const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 
-    connection.query(createApiCallsTableQuery, (err, result) => {
-        if (err) {
-            console.log("Error creating api_calls table: " + err.message);
-        } else {
-            console.log("Api_calls table created successfully");
-        }
-    });
-}
-
-// Middleware to parse JSON bodies
+app.use(cors());
 app.use(express.json());
+
 
 
 // Route for user registration
 // Route for user registration
 app.post('/register', async (req, res) => {
-    try {
-        const { username, email, password } = req.body;
+  try {
+    const { username, email, password } = req.body;
 
-        // Check if username, email, and password are provided
-        if (!username || !email || !password) {
-            return res.status(400).json({ error: 'Username, email, and password are required' });
-        }
-
-        // Hash the password with salt rounds
-        const saltRounds = 10; // You can adjust this number as needed
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Save the user to the database
-        connection.query('INSERT INTO users (username, email, password, role_id) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, 1], (err, result) => {
-            if (err) {
-                console.log("Error registering user: " + err.message);
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else {
-                console.log("User registered successfully");
-                // Initialize API calls with user's username
-                connection.query('INSERT INTO api_calls (user_name, call_count) VALUES (?, ?)', [username, 0], (err, result) => {
-                    if (err) {
-                        console.log("Error initializing API calls for user: " + err.message);
-                        res.status(500).json({ error: 'Internal Server Error' });
-                    } else {
-                        console.log("API calls initialized for user");
-                        res.status(201).json({ message: 'User registered successfully' });
-                    }
-                });
-            }
-        });
-    } catch (error) {
-        console.error("Error registering user: " + error.message);
-        res.status(500).json({ error: 'Internal Server Error' });
+    // Check if username, email, and password are provided
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Username, email, and password are required' });
     }
-});
 
-app.post('/api_call', (req, res) => {
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Save the user to the database with the hashed password
+    const user = new User({ username, email, password: hashedPassword, role_id: 1 });
+    const apiUser = new ApiCall({ user_name: username, call_count: 0 });
+
+    await user.save();
+    await apiUser.save();
+
+    console.log("User registered successfully");
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error("Error registering user: " + error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
 // Route for user login
 app.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
+  try {
+    const { username, password } = req.body;
 
-        // Fetch the user from the database
-        connection.query('SELECT * FROM users WHERE username = ?', [username], async (err, results) => {
-            if (err) {
-                console.log("Error logging in: " + err.message);
-                res.status(500).json({ error: 'Internal Server Error' });
-            } else if (results.length === 0) {
-                res.status(401).json({ error: 'Invalid username or password' });
-            } else {
-                // Compare passwords
-                const match = await bcrypt.compare(password, results[0].password);
-                if (match) {
-                    console.log("Login successful");
-                    // Check the user's role ID
-                    const roleID = results[0].role_id;
-                    // Redirect based on role
-                    if (roleID === 1) {
-                        res.status(200).json({ message: 'Login successful', role: 'user' });
-                    } else if (roleID === 2) {
-                        res.status(200).json({ message: 'Login successful', role: 'admin' });
-                    } else {
-                        res.status(403).json({ error: 'Invalid role' });
-                    }
-                } else {
-                    res.status(401).json({ error: 'Invalid username or password' });
-                }
-            }
-        });
-    } catch (error) {
-        console.error("Error logging in: " + error.message);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+    // Fetch the user from the database
+    const user = await User.findOne({ username });
 
-// Route to get users along with their associated API calls
-app.get('/users', (req, res) => {
-    const roleID = req.query.role_id; // Extract the role ID from the request query
-    if (roleID !== '2') { // Check if the role ID is not for an admin
-        return res.status(403).json({ error: 'Forbidden' }); // Send a Forbidden error response
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Proceed to fetch users if the role ID is for an admin
-    connection.query(`
-        SELECT u.username, u.email, u.role_id, COUNT(a.user_name) AS api_call_count
-        FROM users u
-        LEFT JOIN api_calls a ON u.username = a.user_name
-        GROUP BY u.username, u.email, u.role_id;
-    `, (err, results) => {
-        if (err) {
-            console.error("Error fetching users:", err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-            res.json(results);
-        }
-    });
-});
-
-
-// Route to get all roles modify to verify perm status
-app.get('/roles', (req, res) => {
-    connection.query('SELECT * FROM roles', (err, results) => {
-        if (err) {
-            res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-            res.json(results);
-        }
-    });
+    // Compare passwords
+    const match = await bcrypt.compare(password, user.password);
+    if (match) {
+      // Check the role of the user
+      const role = user.role_id === 1 ? 'user' : 'admin';
+      
+      
+      res.status(200).json({ message: 'Login successful', role });
+    } else {
+      res.status(401).json({ error: 'Invalid username or password' });
+    }
+  } catch (error) {
+    console.error("Error logging in: " + error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
 // Route to check if a username or email already exists
-app.get('/checkuser', (req, res) => {
-    const { username, email } = req.query;
-    
-    // Check if username or email exists
-    connection.query('SELECT COUNT(*) AS usernameCount, COUNT(*) AS emailCount FROM users WHERE username = ? OR email = ?', [username, email], (err, results) => {
-        if (err) {
-            console.error("Error checking username and email: " + err.message);
-            res.status(500).json({ error: 'Internal Server Error' });
-        } else {
-            const usernameCount = results[0].usernameCount;
-            const emailCount = results[0].emailCount;
-            res.status(200).json({ usernameUnique: usernameCount === 0, emailUnique: emailCount === 0 });
-        }
-    });
+app.get('/checkuser', async (req, res) => {
+  const { username, email } = req.query;
+  
+  try {
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    res.status(200).json({ usernameUnique: !existingUser, emailUnique: !existingUser });
+  } catch (error) {
+    console.error("Error checking username and email: " + error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+// Route to get user information including API call count
+app.get('/users', async (req, res) => {
+  try {
+    // Retrieve user information from the database
+    const users = await User.find({}, { password: 0 });
+
+    // Fetch API call count for each user
+    const usersWithApiCalls = await Promise.all(users.map(async user => {
+      // Find the corresponding API call record for the user
+      const apiCall = await ApiCall.findOne({ user_name: user.username });
+      
+      // If API call record found, get the call count, otherwise set it to 0
+      const apiCallCount = apiCall ? apiCall.call_count : 0;
+      
+      // Convert Mongoose document to plain JavaScript object
+      const userData = user.toObject();
+      
+      // Add API call count to user object
+      userData.api_call_count = apiCallCount;
+      
+      return userData;
+    }));
+
+    // Send the role along with the user data
+    const role = usersWithApiCalls.length > 0 && usersWithApiCalls[0].role_id === 1 ? 'user' : 'admin';
+    res.status(200).json({ users: usersWithApiCalls, role });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 
 app.listen(port, () => {
-    console.log(`Server listening at http://localhost:${port}`);
-});
-
-// Close the database connection when the server is stopped
-process.on("SIGINT", () => {
-    connection.end();
-    console.log("Server stopped. Database connection closed.");
-    process.exit();
+  console.log(`Server listening at http://localhost:${port}`);
 });
