@@ -38,7 +38,12 @@ const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 app.use(cors());
 app.use(express.json());
 
-
+const corsOptions = {
+  origin: '*', // Update with the origin of your client-side code
+  credentials: true // Enable credentials
+  
+};
+app.use(cors(corsOptions));
 
 // Route for user registration
 // Route for user registration
