@@ -39,6 +39,7 @@ app.use(cors());
 app.use(express.json());
 
 
+
 // Route for user registration
 // Route for user registration
 app.post('/register', async (req, res) => {
@@ -86,18 +87,9 @@ app.post('/login', async (req, res) => {
     if (match) {
       // Check the role of the user
       const role = user.role_id === 1 ? 'user' : 'admin';
-     if (userRole === 'admin') {
-              const adminToken = jwt.sign({ adminId: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-              res.cookie('adminToken', adminToken, { httpOnly: true,  secure: true});
-              return res.json({ message: 'Admin logged in successfully', role: userRole});
-              
-            } else if (userRole === 'user') {
-              const userToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-              res.cookie('userToken', userToken, { httpOnly: true });
-              return res.json({ message: 'User logged in successfully', role: userRole})
-            }  
+      
+      
+      res.status(200).json({ message: 'Login successful', role });
     } else {
       res.status(401).json({ error: 'Invalid username or password' });
     }
