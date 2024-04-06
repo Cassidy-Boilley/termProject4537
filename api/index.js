@@ -39,7 +39,7 @@ app.use(cors());
 app.use(express.json());
 
 const corsOptions = {
-  origin: '*', // Update with the origin of your client-side code
+  origin: 'https://cassidyboilley-labs.netlify.app/comp4537/termproject', // Update with the origin of your client-side code
   credentials: true // Enable credentials
   
 };
@@ -95,7 +95,7 @@ app.post('/login', async (req, res) => {
      if (userRole === 'admin') {
               const adminToken = jwt.sign({ adminId: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-              res.cookie('adminToken', adminToken, { httpOnly: true});
+              res.cookie('adminToken', adminToken, { httpOnly: true,  secure: true});
               return res.json({ message: 'Admin logged in successfully', role: userRole});
               
             } else if (userRole === 'user') {
