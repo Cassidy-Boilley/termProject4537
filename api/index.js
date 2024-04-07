@@ -40,12 +40,6 @@ const Role = mongoose.model('Role', rolesSchema);
 const User = mongoose.model('User', usersSchema);
 const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 
-const corsOptions = {
-  origin: true, // Update with the origin of your client-side code
-  credentials: true // Enable credentials
-};
-app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
 
