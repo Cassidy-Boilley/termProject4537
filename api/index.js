@@ -39,8 +39,11 @@ const Role = mongoose.model('Role', rolesSchema);
 const User = mongoose.model('User', usersSchema);
 const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 
-app.use(cors());
-
+const corsOptions = {
+  origin: 'https://cassidyboilley-labs.netlify.app', // Allow requests only from this origin
+  credentials: true // Enable credentials
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
