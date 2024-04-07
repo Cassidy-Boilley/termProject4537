@@ -106,7 +106,7 @@ app.post('/login', async (req, res) => {
             res.cookie('token', token, { httpOnly: true, maxAge: 3600000 }); // Max age 1 hour
 
           // res.status(200).json({ message: 'Login successful', role: userRole, token }); // Include token in response
-            res.redirect('./user.html');
+            res.redirect('user.html');
         } else {
             res.status(401).json({ error: 'Invalid username or password' });
         }
