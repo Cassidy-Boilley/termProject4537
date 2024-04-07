@@ -105,7 +105,11 @@ app.post('/login', async (req, res) => {
 
             res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , secure: true, path: '/' }); // Max age 1 hour
 
-            res.status(200).json({ message: 'Login successful', role: userRole, token }); // Include token in response
+            if (userRole === 'user') {
+              return res.redirect("/user.html")
+            } else if (userRole === 'admin') {
+              return res.redirect("/admin.html")
+            }
         } else {
             res.status(401).json({ error: 'Invalid username or password' });
         }
