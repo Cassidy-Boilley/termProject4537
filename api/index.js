@@ -5,7 +5,7 @@ const cors = require('cors');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const { body, validationResult } = require('express-validator');
+
 const fetch = require('node-fetch');
 const Joi = require('joi'); // Import Joi for validation
 
@@ -39,11 +39,7 @@ const Role = mongoose.model('Role', rolesSchema);
 const User = mongoose.model('User', usersSchema);
 const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 
-const corsOptions = {
-// Update with the origin of your client-side code
-  credentials: true // Enable credentials
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use(express.json());
 app.use(cookieParser());
