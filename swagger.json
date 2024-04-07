@@ -1,0 +1,190 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Express API Documentation",
+    "description": "Documentation for the Express API server",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://term-project4537.vercel.app",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/register": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Register a new user",
+        "description": "Endpoint to register a new user",
+        "operationId": "registerUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Login with username and password",
+        "description": "Endpoint for user authentication",
+        "operationId": "loginUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "john_doe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "401": {
+            "description": "Invalid username or password"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/checkuser": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Check if username or email already exists",
+        "description": "Endpoint to verify the uniqueness of username or email",
+        "operationId": "checkUser",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "query",
+            "description": "Username to check",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "john_doe"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Email to check",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "john@example.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Get user information including API call count",
+        "description": "Endpoint to retrieve user information along with API call count",
+        "operationId": "getUserInfo",
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api-call": {
+      "post": {
+        "tags": ["User"],
+        "summary": "Make an API call",
+        "description": "Endpoint to make an API call",
+        "operationId": "makeAPICall",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "example": "Some text to send to the API"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "User",
+      "description": "Operations related to user"
+    }
+  ]
+}
