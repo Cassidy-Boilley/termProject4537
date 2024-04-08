@@ -13,7 +13,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const fetch = require('node-fetch');
 const Joi = require('joi');
-const messages = require('../../lang/en/messages');
+const messages = require('../lang/en/messages');
 
 const app = express();
 const port = 3000;
