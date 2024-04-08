@@ -92,8 +92,9 @@ app.post('/login', async (req, res) => {
 
             const token = jwt.sign({ username, role: userRole }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , sameSite: "none" });
-            res.status(200).json({ message: messages.loginSuccess, role: userRole, token });
+            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , secure: true, sameSite: 'None', path: '/' }); // Max age 1 hour
+
+            res.status(200).json({ message: 'Login successful', role: userRole, token }); // Include token in response
         } else {
             res.status(401).json({ error: messages.invalidCredentials });
         }
