@@ -123,8 +123,7 @@ app.get('/checkuser', async (req, res) => {
 
 app.get('/users', async (req, res) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader.split(' ')[1];
+        const token = req.cookies.token;
 
         if (jwt.verify(token, process.env.JWT_SECRET).role == 'admin') {
             const users = await User.find({}, { password: 0 });
@@ -147,8 +146,7 @@ app.get('/users', async (req, res) => {
 
 app.get('/api-count', async (req, res) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader.split(' ')[1];
+        const token = req.cookies.token;
         const userType = jwt.verify(token, process.env.JWT_SECRET).role;
 
         if (['user', 'admin'].includes(userType)) {
@@ -172,8 +170,7 @@ app.get('/api-count', async (req, res) => {
 
 app.post('/api-call', async (req, res) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader.split(' ')[1];
+        const token = req.cookies.token;
         const userType = jwt.verify(token, process.env.JWT_SECRET).role;
 
         if (['user', 'admin'].includes(userType)) {
@@ -235,8 +232,7 @@ app.delete('/delete-user/:userId', async (req, res) => {
     const userId = req.params.userId;
   
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader.split(' ')[1];
+        const token = req.cookies.token;
         const userType = jwt.verify(token, process.env.JWT_SECRET).role;
 
         if (userType !== 'admin') {
