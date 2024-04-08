@@ -187,11 +187,11 @@
   "tags": [
     {
       "name": "User",
-      "description": "Operations related to user"
+      "description": "Operations related to a user"
     },
     {
       "name": "Admin",
-      "description": "Operations related to an admin user"
+      "description": "Operations related to an admin"
     }
   ]
 }
