@@ -5,7 +5,9 @@ const messages = {
     invalidCredentials: 'Invalid username or password',
     serverError: 'Internal Server Error',
     usernameEmailExists: 'Username or email already exists',
-    apiFailed: 'Failed to fetch data from the external API'
+    apiFailed: 'Failed to fetch data from the external API',
+    apiIncrementSuccess: 'API count incremented successfully',
+    userDeleted: 'User deleted successfully'
 };
 
 module.exports = messages;

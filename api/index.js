@@ -98,7 +98,7 @@ app.post('/login', async (req, res) => {
 
             const token = jwt.sign({ username, role: userRole }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , secure: false, sameSite: 'None', path: '/' }); // Max age 1 hour
+            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , secure: true,sameSite: 'None', path: '/' }); // Max age 1 hour
 
             res.status(200).json({ message: 'Login successful', role: userRole, token }); // Include token in response
         } else {
@@ -169,6 +169,7 @@ app.get('/api-count', async (req, res) => {
     }
 });
 
+
 app.post('/api-call', async (req, res) => {
     try {
         const authHeader = req.headers['authorization'];
@@ -176,29 +177,31 @@ app.post('/api-call', async (req, res) => {
         const userType = jwt.verify(token, process.env.JWT_SECRET).role;
 
         if (['user', 'admin'].includes(userType)) {
-            const username = jwt.verify(token, process.env.JWT_SECRET).username;
-            await ApiCall.findOneAndUpdate(
-                { user_name: username },
-                { $inc: { call_count: 1 } },
-                { new: true }
-            );
-
+          const username = jwt.verify(token, process.env.JWT_SECRET).username;
+          const updateResponse = await fetch('https://term-project4537.vercel.app/update-api-count', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+          });
+          if (updateResponse.ok) {
             const apiCount = await ApiCall.findOne({ user_name: username });
             const { text } = req.body;
             const response = await fetch('https://comp4537labs.com/project/answer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text })
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text })
             });
 
-            if (response.ok) {
-                const responseData = await response.json();
-                responseData.apiCount = apiCount ? apiCount.call_count : 0;
-                console.log(responseData);
-                res.status(200).json(responseData);
-            } else {
-                res.status(500).json({ error: messages.apiFailed });
-            }
+          if (response.ok) {
+              const responseData = await response.json();
+              responseData.apiCount = apiCount ? apiCount.call_count : 0;
+              console.log(responseData);
+              res.status(200).json(responseData);
+          } else {
+              res.status(500).json({ error: messages.apiFailed });
+          }
+          }
+          
         } else {
             res.status(401).json({ error: messages.unauthorized });
         }
@@ -208,6 +211,50 @@ app.post('/api-call', async (req, res) => {
     }
 });
 
+// PUT: Increment API call count
+app.put('/update-api-count', async (req, res) => {
+    try {
+        const { username } = req.body;
+
+        // Find or create API call record for the user
+        await ApiCall.findOneAndUpdate(
+                { user_name: username },
+                { $inc: { call_count: 1 } },
+                { new: true }
+        );
+        
+        res.status(200).json({ message: messages.apiIncrementSuccess });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: messages.serverError });
+    }
+});
+
+app.delete('/deleteUser', async (req, res) => {
+  let request = req.body;
+  
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader.split(' ')[1];
+    const userType = jwt.verify(token, process.env.JWT_SECRET).role;
+
+    if (['admin'].includes(userType)) {
+      const user = await User.findOne({ username: request.username });
+      if (user) {
+        await User.deleteOne({ username: request.username });
+        await ApiCall.deleteOne({ user_name: request.username });
+        res.status(200).json({ message: userDeleted });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } else {
+      res.status(401).json({ error: messages.unauthorized });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: messages.serverError });
+  }
+});
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
