@@ -45,7 +45,7 @@ const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
 
 const corsOptions = {
   origin: 'http://127.0.0.1:5500',
-  //origin: 'https://cassidyboilley-labs.netlify.app',
+  origin: 'https://cassidyboilley-labs.netlify.app',
     credentials: true
 };
 app.use(cors(corsOptions));
