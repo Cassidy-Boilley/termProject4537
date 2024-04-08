@@ -173,7 +173,7 @@ app.post('/api-call', async (req, res) => {
         res.setHeader("Access-Control-Allow-Origin", "*"); // Set the Access-Control-Allow-Origin header
         const token = req.cookies.token;
       const userType = jwt.verify(token, process.env.JWT_SECRET).role;
-      res.setHeader('Access-Control-Allow-Origin', 'https://cassidyboilley-labs.netlify.app', 'https://term-project4537.vercel.app');
+      
 
         if (['user', 'admin'].includes(userType)) {
           const username = jwt.verify(token, process.env.JWT_SECRET).username;
