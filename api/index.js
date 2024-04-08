@@ -42,11 +42,11 @@ const apiCallsSchema = new mongoose.Schema({
 const Role = mongoose.model('Role', rolesSchema);
 const User = mongoose.model('User', usersSchema);
 const ApiCall = mongoose.model('ApiCall', apiCallsSchema);
-
+  // origin: 'http://127.0.0.1:5500',
 const corsOptions = {
-  origin: 'http://127.0.0.1:5500',
+
   origin: 'https://cassidyboilley-labs.netlify.app',
-    credentials: true
+  credentials: true
 };
 app.use(cors(corsOptions));
 app.use(express.json());
