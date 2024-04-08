@@ -1,3 +1,9 @@
+/*
+
+** ChatGPT was used in the writing of this code. **
+
+*/
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
