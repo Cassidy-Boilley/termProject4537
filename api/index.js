@@ -230,31 +230,35 @@ app.put('/update-api-count', async (req, res) => {
     }
 });
 
-app.delete('/deleteUser', async (req, res) => {
-  let request = req.body;
+app.delete('/delete-user/:userId', async (req, res) => {
+    const userId = req.params.userId;
   
-  try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader.split(' ')[1];
-    const userType = jwt.verify(token, process.env.JWT_SECRET).role;
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader.split(' ')[1];
+        const userType = jwt.verify(token, process.env.JWT_SECRET).role;
 
-    if (['admin'].includes(userType)) {
-      const user = await User.findOne({ username: request.username });
-      if (user) {
-        await User.deleteOne({ username: request.username });
-        await ApiCall.deleteOne({ user_name: request.username });
-        res.status(200).json({ message: userDeleted });
-      } else {
-        res.status(404).json({ error: 'User not found' });
-      }
-    } else {
-      res.status(401).json({ error: messages.unauthorized });
+        if (userType !== 'admin') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Delete user and associated API call data
+        await User.deleteOne({ _id: userId });
+        await ApiCall.deleteOne({ user_name: user.username });
+
+        res.status(200).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: messages.serverError });
-  }
 });
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
