@@ -170,7 +170,7 @@ app.get('/api-count', async (req, res) => {
 
 app.post('/api-call', async (req, res) => {
     try {
-        res.setHeader("Access-Control-Allow-Origin", "*"); // Set the Access-Control-Allow-Origin header
+        res.setHeader("Access-Control-Allow-Origin", "https://cassidyboilley-labs.netlify.app"); // Set the Access-Control-Allow-Origin header
         const token = req.cookies.token;
       const userType = jwt.verify(token, process.env.JWT_SECRET).role;
       
