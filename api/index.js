@@ -265,6 +265,12 @@ app.get('/check-session', async (req,res) => {
     }
 })
 
+app.post('/logout', (req, res) => {
+    
+    res.clearCookie('token'); // Assuming token is stored in a cookie
+    res.status(200).json({ message: 'Logout successful' });
+});
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
