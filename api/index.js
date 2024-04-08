@@ -214,7 +214,7 @@ app.post('/api-call', async (req, res) => {
 // PUT: Increment API call count
 app.put('/update-api-count', async (req, res) => {
   try {
-      res.setHeader('Access-Control-Allow-Origin', 'https://cassidyboilley-labs.netlify.app');
+      res.setHeader('Access-Control-Allow-Origin', '*');
         const { username } = req.body;
 
         // Find or create API call record for the user
