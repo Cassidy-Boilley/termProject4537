@@ -260,6 +260,15 @@ app.delete('/delete-user/:userId', async (req, res) => {
     }
 });
 
+app.get('/check-session', async (req,res) => {
+    const token = req.cookies.token
+    if (token) {
+        res.status(200).json({session: true})
+    } else {
+        res.status(200).json({session: false})
+    }
+})
+
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
