@@ -139,8 +139,8 @@ app.get('/users', async (req, res) => {
             res.status(200).json({ users: usersWithApiCalls });
         }
     } catch (error) {
-        console.error("Error fetching users:", error);
-        res.status(500).json({ error: messages.serverError });
+        
+        res.status(500).json({ error: token });
     }
 });
 
