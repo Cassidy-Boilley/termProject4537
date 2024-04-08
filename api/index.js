@@ -100,7 +100,7 @@ app.post('/login', async (req, res) => {
 
             res.cookie('token', token, { httpOnly: true, maxAge: 3600000 , secure: true, sameSite: 'None', path: '/' }); // Max age 1 hour
 
-            res.status(200).json({ message: 'Login successful', role: userRole}); // Include token in response
+            res.status(200).json({ message: 'Login successful', role: userRole, token }); // Include token in response
         } else {
             res.status(401).json({ error: messages.invalidCredentials });
         }
@@ -139,8 +139,8 @@ app.get('/users', async (req, res) => {
             res.status(200).json({ users: usersWithApiCalls });
         }
     } catch (error) {
-        
-        res.status(500).json({ error: token });
+        console.error("Error fetching users:", error);
+        res.status(500).json({ error: messages.serverError });
     }
 });
 
