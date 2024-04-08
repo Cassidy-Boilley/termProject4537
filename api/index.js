@@ -180,7 +180,7 @@ app.post('/api-call', async (req, res) => {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username })
-          });
+        });
           if (updateResponse.ok) {
             const apiCount = await ApiCall.findOne({ user_name: username });
             const { text } = req.body;
