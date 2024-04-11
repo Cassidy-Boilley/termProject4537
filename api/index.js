@@ -273,6 +273,9 @@ app.post('/logout', (req, res) => {
     res.status(200).json({ message: 'Logout successful' });
 });
 
+app.get('/documentation', async (req, res) => {
+    res.render('swagger.json');
+});
 app.listen(port, () => {
     console.log(`Server listening at http://localhost:${port}`);
 });
